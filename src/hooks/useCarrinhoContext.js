@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { CarrinhoContext } from "@/context/CarrinhoContext";
 
 //hook customizado para adicionar a remover produtos
@@ -64,9 +64,8 @@ export const useCarrinhoContext = () => {
     );
     setCarrinho(produto);
   }
-  //usa o hook useEffect pra monitorar o carrinho e exibir a quantidade e preço atualizado de acordo com os produtos no carrinho
-  useEffect(() => {
-    const { totalTemp, quantidadeTemp } = carrinho.reduce(
+  const { totalTemp, quantidadeTemp } = useMemo(() => {
+    return carrinho.reduce(
       (acumulador, produto) => ({
         quantidadeTemp: acumulador.quantidadeTemp + produto.quantidade,
         totalTemp: acumulador.totalTemp + produto.preco * produto.quantidade,
@@ -76,9 +75,13 @@ export const useCarrinhoContext = () => {
         totalTemp: 0,
       }
     );
+  }, [carrinho]);
+    
+  //usa o hook useEffect pra monitorar o carrinho e exibir a quantidade e preço atualizado de acordo com os produtos no carrinho
+  useEffect(() => {
     setQuantidade(quantidadeTemp);
     setValorTotal(totalTemp);
-  }, [carrinho]);
+  });
 
   return {
     carrinho,
