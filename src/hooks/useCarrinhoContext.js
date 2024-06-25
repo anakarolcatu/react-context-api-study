@@ -1,10 +1,18 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { CarrinhoContext } from "@/context/CarrinhoContext";
 
 //hook customizado para adicionar a remover produtos
 export const useCarrinhoContext = () => {
   //criamos uma variável com chaves pra indicar que vamos desestruturar algo, nesse caso o hook useContext, que iremos usar somente o carrinho e o setCarrinho
-  const { carrinho, setCarrinho } = useContext(CarrinhoContext);
+  const {
+    carrinho,
+    setCarrinho,
+    quantidade,
+    setQuantidade,
+    valorTotal,
+    setValorTotal,
+  } = useContext(CarrinhoContext);
+
   function mudarQuantidade(id, quantidade) {
     return carrinho.map((itemDoCarrinho) => {
       if (itemDoCarrinho.id === id) itemDoCarrinho.quantidade += quantidade;
@@ -50,9 +58,27 @@ export const useCarrinhoContext = () => {
   }
 
   function removerProdutoCarrinho(id) {
-    const produto = carrinho.filter((itemDoCarrinho) => itemDoCarrinho.id !== id);
+    //recebe o id do produto a ser removido e retorna uma lista de produtos que são diferentes do produto que será removido, então atualiza o estado do carrinho sem aquele produto
+    const produto = carrinho.filter(
+      (itemDoCarrinho) => itemDoCarrinho.id !== id
+    );
     setCarrinho(produto);
   }
+  //usa o hook useEffect pra monitorar o carrinho e exibir a quantidade e preço atualizado de acordo com os produtos no carrinho
+  useEffect(() => {
+    const { totalTemp, quantidadeTemp } = carrinho.reduce(
+      (acumulador, produto) => ({
+        quantidadeTemp: acumulador.quantidadeTemp + produto.quantidade,
+        totalTemp: acumulador.totalTemp + produto.preco * produto.quantidade,
+      }), 
+      {
+        quantidadeTemp: 0,
+        totalTemp: 0,
+      }
+    );
+    setQuantidade(quantidadeTemp);
+    setValorTotal(totalTemp);
+  }, [carrinho]);
 
   return {
     carrinho,
@@ -60,5 +86,7 @@ export const useCarrinhoContext = () => {
     adicionarProduto,
     removerProduto,
     removerProdutoCarrinho,
+    valorTotal,
+    quantidade,
   };
 };
